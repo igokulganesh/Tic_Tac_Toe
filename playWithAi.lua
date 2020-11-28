@@ -510,7 +510,10 @@ function scene:create( event )
     buttonSound = audio.loadSound( "audio/buttonSound.mp3" ) 
     winSound = audio.loadSound( "audio/winSound.mp3" ) 
 
-	setTurn(isP1Move)	
+	setTurn(isP1Move)
+
+	start()
+
 end
 
 
