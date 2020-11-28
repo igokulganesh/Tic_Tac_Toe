@@ -9,6 +9,17 @@ local scene = composer.newScene()
 -- -----------------------------------------------------------------------------------
 
 local buttonSound
+local ismute
+
+local function changeAudio()
+	if(ismute == true) then 
+		audio.setVolume( 0.3, { channel=1 } )
+		ismute = false 
+	else 
+		audio.setVolume( 0, { channel=1 } )
+		ismute = true
+	end
+end  
 
 local function gotoPlayWithAi()
 	audio.play( buttonSound )
@@ -48,6 +59,15 @@ function scene:create( event )
 
 	playWithAi:addEventListener( "tap", gotoPlayWithAi )
 	playWithFriend:addEventListener( "tap", gotoPlayWithFriend )
+
+	ismute = false 
+
+	local mute_ico = display.newImageRect( sceneGroup, "Image/unmute.png", 35, 35)
+	mute_ico.x = display.contentCenterX-120
+	mute_ico.y = display.contentCenterY+250
+
+	mute_ico:addEventListener( "tap", changeAudio )
+
 end
 
 

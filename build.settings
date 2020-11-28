@@ -13,6 +13,12 @@ settings =
 		supported = { "portrait", },
 	},
 
+	splashScreen =
+    {
+		enable = true,
+		image = "Image/splashScreen.png"
+    },
+
 	-- Settings for the desktop window; applies to both Win32 and macOS desktop apps
 	window =
     {
@@ -35,17 +41,15 @@ settings =
 		usesPermissions =
 		{
 			"android.permission.INTERNET",
-            "android.permission.WRITE_EXTERNAL_STORAGE",
-            "android.permission.ACCESS_FINE_LOCATION",
-            "android.permission.ACCESS_COARSE_LOCATION",
 		},
 
-		usesFeatures =
-        {
-            { name="android.hardware.camera", required=false },
-            { name="android.hardware.location", required=false },
-            { name="android.hardware.location.gps", required=false },
-        },
+		supportsScreens =
+		{
+			smallScreens  = true,
+			normalScreens = true,
+			largeScreens  = true,
+			xlargeScreens = true,
+		},
 
 	},
 
