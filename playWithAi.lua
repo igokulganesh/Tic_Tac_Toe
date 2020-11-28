@@ -30,8 +30,19 @@ local tapSound
 local winSound 
 local buttonSound
 
---util function 
+--bcak button
+function scene:key(event)
+    
+    -- handle the back key press however you choose
+    if ( event.keyName == "back" ) then
+    	-- Go to the menu screen
+		composer.gotoScene( "menu" )
+    end
+end
 
+Runtime:addEventListener( "key", scene )
+
+--util function 
 local function setTurn(var) -- true means 1st player 
 	if(var == true)
 	then
@@ -315,8 +326,13 @@ end
 
 local function restart()
 	
-	backGroup:removeSelf()
-	mainGroup:removeSelf()
+	if(backGroup) then 
+		backGroup:removeSelf()
+	end 
+	
+	if(mainGroup) then 
+		mainGroup:removeSelf()
+	end 
 		
 	if(boxGroup) then 
 		boxGroup:removeSelf()
@@ -346,9 +362,9 @@ local function gameOver()
 	local text = display.newText(mainGroup ,gameStatus, display.contentCenterX, display.contentCenterY-200, "Text/Bangers.ttf", 24) 
 	text:setFillColor( 0, 0, 0 )
 
-	audio.play( winSound )
+	audio.play( winSound, { channel=3} )
 
-	timer.performWithDelay( 2000, restart )
+	timer.performWithDelay( 1000, restart )
 
 end
 
@@ -359,7 +375,7 @@ local function makeManMove(s)
 
 	if( isP1Move and s.val == 0 )
 	then 
-		audio.play( tapSound )
+		audio.play( tapSound, { channel=2} )
 		drawXO(s, player1)
 		isP1Move = false
 	end
@@ -437,11 +453,11 @@ function scene:create( event )
 	restartButton.y = display.contentCenterY - 250
 
 	backButton:addEventListener( "tap", function()  
-		audio.play( buttonSound )
+		audio.play( buttonSound, { channel=2} )
 		composer.gotoScene( "menu" )
 		end )
 	restartButton:addEventListener( "tap", function() 
-		audio.play( buttonSound )
+		audio.play( buttonSound, { channel=2} )
 		restart()
 		end )
 

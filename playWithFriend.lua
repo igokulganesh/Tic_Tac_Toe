@@ -30,6 +30,18 @@ local tapSound
 local winSound 
 local buttonSound
 
+--bcak button
+function scene:key(event)
+    
+    -- handle the back key press however you choose
+    if ( event.keyName == "back" ) then
+    	-- Go to the menu screen
+		composer.gotoScene( "menu" )
+    end
+end
+
+Runtime:addEventListener( "key", scene )
+
 --util function 
 local function setTurn(var) -- true means 1st player 
 	if(var == true)

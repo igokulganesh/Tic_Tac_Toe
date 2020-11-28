@@ -11,6 +11,29 @@ local scene = composer.newScene()
 local buttonSound
 local ismute
 
+-- Handler that gets notified when the alert closes
+local function onComplete( event )
+    if ( event.action == "clicked" ) 
+    then
+        local i = event.index
+        if ( i == 1 ) then
+            os.exit()
+        end
+    end
+end
+
+--bcak button
+function scene:key(event)
+    
+    -- handle the back key press however you choose
+    if ( event.keyName == "back" ) then
+    	-- Go to the menu screen
+		local alert = native.showAlert( "Gg DevOps", "Do you want to exit", { "Yes", "No" }, onComplete )
+    end
+end
+
+Runtime:addEventListener( "key", scene )
+
 local function changeAudio()
 	if(ismute == true) then 
 		audio.setVolume( 0.3, { channel=1 } )
