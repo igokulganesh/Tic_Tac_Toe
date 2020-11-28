@@ -498,12 +498,12 @@ function scene:create( event )
 		end
 	end
 
-	if(startPlayer == false) then 
-		isP1Move = true 
-		startPlayer = true
-	else 
+	if(startPlayer) then 
 		isP1Move = false 
 		startPlayer = false
+	else 
+		isP1Move = true
+		startPlayer = true
 	end
 
     tapSound = audio.loadSound( "audio/tapSound.mp3" ) 
