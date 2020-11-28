@@ -16,7 +16,7 @@ settings =
 	-- Settings for the desktop window; applies to both Win32 and macOS desktop apps
 	window =
     {
-        defaultMode = "fullscreen",
+
         resizable = true,
         minViewWidth = 444,
         minViewHeight = 794,
