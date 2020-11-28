@@ -1,0 +1,79 @@
+--
+-- For more information on build.settings, see the Project Build Settings guide at:
+-- https://docs.coronalabs.com/guide/distribution/buildSettings
+--
+
+settings =
+{
+	orientation =
+	{
+		-- Supported values for orientation:
+		-- portrait, portraitUpsideDown, landscapeLeft, landscapeRight
+		default = "portrait",
+		supported = { "portrait", },
+	},
+
+	-- Settings for the desktop window; applies to both Win32 and macOS desktop apps
+	window =
+    {
+        --defaultMode = "fullscreen",
+        resizable = true,
+        minViewWidth = 444,
+        minViewHeight = 794,
+    },  
+
+	--
+	-- Android section
+	--
+	android =
+	{
+		versionCode = "14",
+		
+		usesPermissions =
+		{
+			"android.permission.INTERNET",
+            "android.permission.WRITE_EXTERNAL_STORAGE",
+            "android.permission.ACCESS_FINE_LOCATION",
+            "android.permission.ACCESS_COARSE_LOCATION",
+		},
+
+		usesFeatures =
+        {
+            { name="android.hardware.camera", required=false },
+            { name="android.hardware.location", required=false },
+            { name="android.hardware.location.gps", required=false },
+        },
+
+	},
+
+	--
+	-- iOS section
+	--
+	iphone =
+	{
+		xcassets = "Images.xcassets",
+		plist =
+		{
+			UIStatusBarHidden = false,
+			UILaunchStoryboardName = "LaunchScreen",
+		},
+	},
+
+	--
+	-- Plugins section
+	--
+	plugins =
+	{
+
+	},
+
+	--
+	-- Project section
+	--
+	excludeFiles =
+	{
+		-- Exclude unnecessary files for each platform
+		all = { "Icon.png", "Icon-*dpi.png", "Images.xcassets", },
+		android = { "LaunchScreen.storyboardc", },
+	},
+}
