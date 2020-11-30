@@ -11,7 +11,7 @@ local scene = composer.newScene()
 -- initilize variables
 local backGroup -- Display group for the background image, Table
 local mainGroup -- Display group for the X and O 
-local boxGroup -- for sqaure
+local boxGroup -- for square
 
 
 local move = 0 --Number of move currently 
@@ -19,7 +19,7 @@ local status = 0 -- Game status -- 0 means not completed -- 1 means player1 wins
 local player1 = 1
 local player2 = 2 --here player2 is computer
 local board = {} -- it is 2D array 3x3 matrix each 
-local square -- it is a 1D array 1-9 matrix 
+local square = {} -- it is a 1D array 1-9 matrix 
 local scoreP1 = 0
 local scoreP2 = 0
 local startPlayer = false -- is player 1 move 
@@ -29,6 +29,24 @@ local turnText -- Turn text
 local tapSound 
 local winSound 
 local buttonSound
+local backButton
+local restartButton
+
+
+-- function 
+local restart 
+
+local function gotoMenu()  
+	audio.play( buttonSound )
+	composer.gotoScene( "menu" )
+end 
+
+
+local function gotoRestart()
+	audio.play( buttonSound )
+	restart()
+end
+		
 
 --bcak button
 function scene:key(event)
@@ -64,8 +82,8 @@ local function drawXO(s, player)
 	else -- O
 		xo = display.newImageRect( mainGroup, "Image/xPink.png", 75, 75)
 	end
-	xo.x = s.img.x
-	xo.y = s.img.y
+	xo.x = s.x
+	xo.y = s.y
 	
 	local i =  math.floor((s.id-1)/3)
 	local j = (s.id-1)%3 
@@ -138,24 +156,37 @@ local function isGameOver()
 end
 
 -- Handler that gets notified when the alert closes
-local function restart()
-	
-	backGroup:removeSelf()
-	mainGroup:removeSelf()
-		
-	if(boxGroup) then 
-		boxGroup:removeSelf()
-	end 
-
+restart = function()
 	scene:create()
+end
+
+local removelistener 
+
+local function option(title)
+
+	local gameOverBackground = display.newRect(mainGroup, 0, 0, display.actualContentWidth, display.actualContentHeight) -- display an opaque background graphic for some game over polish
+    gameOverBackground.x = display.contentCenterX
+    gameOverBackground.y = display.contentCenterY
+    gameOverBackground:setFillColor(0)
+    gameOverBackground.alpha = 0.65
+
+  
+--[[    local text = display.newText(mainGroup , title, display.contentCenterX, display.contentCenterY-200, "Text/Bangers.ttf", 24) 
+	text:setFillColor( 0, 0, 0 )--]]
+
+    -- Create a text object that will display game over text
+    local gameOverText = display.newText( mainGroup, title, 100, 200, "Text/Bangers.ttf", 40 )
+    gameOverText.x = display.contentCenterX
+    gameOverText.y = display.contentCenterY-20
+    gameOverText:setFillColor( 1, 1, 1 ) 
+
+    timer.performWithDelay( 3000, restart )
+
 end
 
 local function gameOver()
 
-	if(boxGroup) then 
-		boxGroup:removeSelf()  -- for removeEventListener 
-	end 
-	boxGroup = nil
+	removelistener()
 
 	local gameStatus 
 	if(status == 1) then 
@@ -168,16 +199,16 @@ local function gameOver()
 		gameStatus = "Match Tied"
 	end
 
-	local text = display.newText(mainGroup ,gameStatus, display.contentCenterX, display.contentCenterY-200, "Text/Bangers.ttf", 24) 
-	text:setFillColor( 0, 0, 0 )
-
 	audio.play( winSound )
-	timer.performWithDelay( 2000, restart )
+
+	option(gameStatus)
+	
 end
 
 
-local function makeManMove(s)
+local function makeManMove(event)
 
+	local s = event.target
 	if( s.val == 0)
 	then 
 		audio.play( tapSound )
@@ -202,10 +233,23 @@ local function start()
 	setTurn(isP1Move)
 end 
 
-local function setSquare( x, y, s)
-	s.img = display.newRect( boxGroup, display.contentCenterX + x, display.contentCenterY + y, 75, 75)
-	s.img.alpha = 0.01
-	s.img:addEventListener( "tap", function() makeManMove(s) end )
+removelistener = function ()
+
+	for i=1,#square do                
+		square[i]:removeEventListener("tap", makeManMove)               
+    end
+
+	backButton:removeEventListener( "tap", gotoMenu ) 
+	restartButton:removeEventListener( "tap", gotoRestart )
+
+end
+
+local function setSquare( x, y, s, i)
+	s = display.newRect( boxGroup, display.contentCenterX + x, display.contentCenterY + y, 75, 75)
+	s.id = i
+	s.val = 0
+	s.alpha = 0.01
+	s:addEventListener( "tap", makeManMove )
 end
 
 
@@ -222,7 +266,7 @@ function scene:create( event )
 	backGroup = display.newGroup()  -- Display group for the background image, Table
     sceneGroup:insert( backGroup )  -- Insert into the scene's view group
  
-    boxGroup = display.newGroup()  -- Display group for sqaure
+    boxGroup = display.newGroup()  -- Display group for square
     sceneGroup:insert( boxGroup )  -- Insert into the scene's view group
 
     mainGroup = display.newGroup()  -- Display group for the X and O etc.
@@ -233,22 +277,16 @@ function scene:create( event )
 	bg.x = display.contentCenterX
 	bg.y = display.contentCenterY
 
-	local backButton = display.newImageRect( backGroup,"Image/back.png", 30, 30)
+	backButton = display.newImageRect( backGroup,"Image/back.png", 30, 30)
 	backButton.x = display.contentCenterX - 140
 	backButton.y = display.contentCenterY - 250
 	
-	local restartButton = display.newImageRect( backGroup,"Image/restart.png", 35, 35)
+	restartButton = display.newImageRect( backGroup,"Image/restart.png", 35, 35)
 	restartButton.x = display.contentCenterX + 140
 	restartButton.y = display.contentCenterY - 250
 
-	backButton:addEventListener( "tap", function()  
-		audio.play( buttonSound )
-		composer.gotoScene( "menu" )
-		end )
-	restartButton:addEventListener( "tap", function() 
-		audio.play( buttonSound )
-		restart()
-		end )
+	backButton:addEventListener( "tap", gotoMenu ) 
+	restartButton:addEventListener( "tap", gotoRestart )
 
 	-- drawing the board lines 
 	drawLine(-45, -150, -45, 110)
@@ -257,19 +295,16 @@ function scene:create( event )
 	drawLine(-130, 25, 130, 25)
 
 	square = {}
-	for i = 1, 9, 1 do
-		square[i] = {val = 0, id = i }
-	end 
 
-	setSquare(-90, -110, square[1])
-	setSquare(  0, -110, square[2])
-	setSquare( 90, -110, square[3])
-	setSquare(-90, -20, square[4])
-	setSquare(  0, -20, square[5])
-	setSquare( 90, -20, square[6])
-	setSquare(-90,  70, square[7])
-	setSquare(  0,  70, square[8])
-	setSquare( 90,  70, square[9])
+	setSquare(-90, -110, square[1], 1)
+	setSquare(  0, -110, square[2], 2)
+	setSquare( 90, -110, square[3], 3)
+	setSquare(-90, -20, square[4],  4)
+	setSquare(  0, -20, square[5],  5)
+	setSquare( 90, -20, square[6],  6)
+	setSquare(-90,  70, square[7],  7)
+	setSquare(  0,  70, square[8],  8)
+	setSquare( 90,  70, square[9],  9)
 
 	local p1 = display.newImageRect( backGroup,"Image/BlueMan.png", 80, 80)
 	p1.x = display.contentCenterX - 90  
