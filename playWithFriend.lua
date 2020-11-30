@@ -37,13 +37,13 @@ local restartButton
 local restart 
 
 local function gotoMenu()  
-	audio.play( buttonSound )
+	audio.play( buttonSound, { channel=2}  )
 	composer.gotoScene( "menu" )
 end 
 
 
 local function gotoRestart()
-	audio.play( buttonSound )
+	audio.play( buttonSound, { channel=2}  )
 	restart()
 end
 		
@@ -57,8 +57,6 @@ function scene:key(event)
 		composer.gotoScene( "menu" )
     end
 end
-
-Runtime:addEventListener( "key", scene )
 
 --util function 
 local function setTurn(var) -- true means 1st player 
@@ -82,11 +80,11 @@ local function drawXO(s, player)
 	else -- O
 		xo = display.newImageRect( mainGroup, "Image/xPink.png", 75, 75)
 	end
-	xo.x = s.x
-	xo.y = s.y
+	xo.x = s.img.x
+	xo.y = s.img.y
 	
-	local i =  math.floor((s.id-1)/3)
-	local j = (s.id-1)%3 
+	local i =  math.floor((s.img.id-1)/3)
+	local j = (s.img.id-1)%3 
 	board[i][j] = player
 	s.val = player
 	move = move + 1
@@ -168,19 +166,15 @@ local function option(title)
     gameOverBackground.x = display.contentCenterX
     gameOverBackground.y = display.contentCenterY
     gameOverBackground:setFillColor(0)
-    gameOverBackground.alpha = 0.65
-
-  
---[[    local text = display.newText(mainGroup , title, display.contentCenterX, display.contentCenterY-200, "Text/Bangers.ttf", 24) 
-	text:setFillColor( 0, 0, 0 )--]]
+    gameOverBackground.alpha = 0.5
 
     -- Create a text object that will display game over text
     local gameOverText = display.newText( mainGroup, title, 100, 200, "Text/Bangers.ttf", 40 )
     gameOverText.x = display.contentCenterX
-    gameOverText.y = display.contentCenterY-20
+    gameOverText.y = display.contentCenterY-200
     gameOverText:setFillColor( 1, 1, 1 ) 
 
-    timer.performWithDelay( 3000, restart )
+    timer.performWithDelay( 2500, restart )
 
 end
 
@@ -199,7 +193,7 @@ local function gameOver()
 		gameStatus = "Match Tied"
 	end
 
-	audio.play( winSound )
+	audio.play( winSound, { channel=3} )
 
 	option(gameStatus)
 	
@@ -208,7 +202,7 @@ end
 
 local function makeManMove(event)
 
-	local s = event.target
+	local s = square[event.target.id] 
 	if( s.val == 0)
 	then 
 		audio.play( tapSound )
@@ -221,11 +215,12 @@ local function makeManMove(event)
 		end
 	end
 
-	setTurn(isP1Move)
-
 	if( isGameOver() ) then 
 		gameOver()
 	end
+
+	setTurn(isP1Move)
+
 	return true
 end
 
@@ -235,21 +230,21 @@ end
 
 removelistener = function ()
 
-	for i=1,#square do                
-		square[i]:removeEventListener("tap", makeManMove)               
+	for i=1, 9, 1 do                
+		print(square[i].img:removeEventListener("tap", makeManMove))               
     end
 
-	backButton:removeEventListener( "tap", gotoMenu ) 
-	restartButton:removeEventListener( "tap", gotoRestart )
+	print(backButton:removeEventListener( "tap", gotoMenu))
+	print(restartButton:removeEventListener( "tap", gotoRestart ))
 
 end
 
 local function setSquare( x, y, s, i)
-	s = display.newRect( boxGroup, display.contentCenterX + x, display.contentCenterY + y, 75, 75)
-	s.id = i
+	s.img = display.newRect( boxGroup, display.contentCenterX + x, display.contentCenterY + y, 75, 75)
+	s.img.id = i
 	s.val = 0
-	s.alpha = 0.01
-	s:addEventListener( "tap", makeManMove )
+	s.img.alpha = 0.01
+	s.img:addEventListener( "tap", makeManMove )
 end
 
 
@@ -295,7 +290,9 @@ function scene:create( event )
 	drawLine(-130, 25, 130, 25)
 
 	square = {}
-
+	for i = 1, 9, 1 do
+		square[i] = {val = 0}
+	end 
 	setSquare(-90, -110, square[1], 1)
 	setSquare(  0, -110, square[2], 2)
 	setSquare( 90, -110, square[3], 3)
@@ -350,7 +347,8 @@ function scene:create( event )
     buttonSound = audio.loadSound( "audio/buttonSound.mp3" ) 
     winSound = audio.loadSound( "audio/winSound.mp3" ) 
 
-	setTurn(isP1Move)	
+	setTurn(isP1Move)
+	Runtime:addEventListener( "key", scene )	
 end
 
 
