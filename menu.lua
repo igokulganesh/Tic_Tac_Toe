@@ -9,10 +9,12 @@ local scene = composer.newScene()
 -- -----------------------------------------------------------------------------------
 
 local buttonSound
-local ismute
+local music_off -- true means off
+local sound_off
 
 -- Handler that gets notified when the alert closes
 local function onComplete( event )
+	audio.play( buttonSound, { channel=2}  )
     if ( event.action == "clicked" ) 
     then
         local i = event.index
@@ -24,7 +26,7 @@ end
 
 --bcak button
 function scene:key(event)
-    
+    audio.play( buttonSound, { channel=2}  )
     -- handle the back key press however you choose
     if ( event.keyName == "back" ) then
     	-- Go to the menu screen
@@ -34,23 +36,39 @@ end
 
 Runtime:addEventListener( "key", scene )
 
-local function changeAudio()
-	if(ismute == true) then 
-		audio.setVolume( 0.3, { channel=1 } )
-		ismute = false 
+local function changeMusic()
+	audio.play( buttonSound, { channel=2}  )
+	if(music_off == true) then 
+		audio.setVolume( 0.4, { channel=1 } )
+		music_off = false 
 	else 
 		audio.setVolume( 0, { channel=1 } )
-		ismute = true
+		music_off = true
 	end
 end  
 
+local function changeSound()
+	audio.play( buttonSound, { channel=2}  )
+	if(sound_off == true) then 
+		audio.setVolume( 0.8, { channel=2 } )
+		audio.setVolume( 0.9, { channel=3 } )
+		sound_off = false 
+	else 
+		audio.setVolume( 0, { channel=2 } )
+		audio.setVolume( 0, { channel=3 } )
+		sound_off = true
+	end
+end  
+
+
+
 local function gotoPlayWithAi()
-	audio.play( buttonSound )
+	audio.play( buttonSound, { channel=2} )
 	composer.gotoScene( "playWithAi", { time=800, effect="crossFade" } )
 end
 
 local function gotoPlayWithFriend()
-	audio.play( buttonSound )
+	audio.play( buttonSound, { channel=2} )
 	composer.gotoScene( "playWithFriend", { time=800, effect="crossFade" } )
 end
 
@@ -83,13 +101,20 @@ function scene:create( event )
 	playWithAi:addEventListener( "tap", gotoPlayWithAi )
 	playWithFriend:addEventListener( "tap", gotoPlayWithFriend )
 
-	ismute = false 
+	music_off = false
+	sound_off = false 
 
-	local mute_ico = display.newImageRect( sceneGroup, "Image/unmute.png", 35, 35)
-	mute_ico.x = display.contentCenterX-120
-	mute_ico.y = display.contentCenterY+250
+	local sound = display.newImageRect( sceneGroup, "Image/unmute.png", 35, 35)
+	sound.x = display.contentCenterX+120
+	sound.y = display.contentCenterY+250
 
-	mute_ico:addEventListener( "tap", changeAudio )
+	sound:addEventListener( "tap", changeSound )
+
+	local music = display.newImageRect( sceneGroup, "Image/music.png", 35, 35)
+	music.x = display.contentCenterX-120
+	music.y = display.contentCenterY+250
+
+	music:addEventListener( "tap", changeMusic )
 
 end
 

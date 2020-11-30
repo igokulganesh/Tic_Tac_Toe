@@ -153,7 +153,6 @@ local function isGameOver()
 	return true 
 end
 
--- Handler that gets notified when the alert closes
 restart = function()
 	scene:create()
 end
@@ -205,7 +204,7 @@ local function makeManMove(event)
 	local s = square[event.target.id] 
 	if( s.val == 0)
 	then 
-		audio.play( tapSound )
+		audio.play( tapSound, { channel=2})
 		if(isP1Move == true) then 
 			drawXO(s, player1)
 			isP1Move = false
@@ -364,7 +363,10 @@ function scene:show( event )
 	elseif ( phase == "did" ) then
 		-- Code here runs when the scene is entirely on screen
 		-- Start the music!
-
+		local prevScene = composer.getSceneName( "previous" ) -- get the previous scene name, i.e. scene_game
+        if(prevScene) then -- if the prevScene exists, then do something. This is only true when the player has went to the game scene
+            composer.removeScene(prevScene) -- remove the previous scene so the player can play again
+        end
 		start()
 	end
 end
