@@ -17,7 +17,7 @@ local function onComplete( event )
     then
         local i = event.index
         if ( i == 1 ) then
-            os.exit()
+        	native.requestExit()
         end
     end
 end
@@ -28,7 +28,7 @@ function scene:key(event)
     -- handle the back key press however you choose
     if ( event.keyName == "back" ) then
     	-- Go to the menu screen
-		local alert = native.showAlert( "Gg DevOps", "Do you want to exit", { "Yes", "No" }, onComplete )
+		local alert = native.showAlert( "Gg DevOps", "Are you sure you want quit?", { "No", "Yes" }, onComplete )
     end
 end
 
@@ -105,6 +105,12 @@ function scene:show( event )
 
 	elseif ( phase == "did" ) then
 		-- Code here runs when the scene is entirely on screen
+        -- Insert code here to make the scene come alive.
+        -- Example: start timers, begin animation, play audio, etc.
+        local prevScene = composer.getSceneName( "previous" ) -- get the previous scene name, i.e. scene_game
+        if(prevScene) then -- if the prevScene exists, then do something. This is only true when the player has went to the game scene
+            composer.removeScene(prevScene) -- remove the previous scene so the player can play again
+        end
 
 		-- Start the music!
         --audio.play( musicTrack, { channel=1, loops=-1 } )
