@@ -9,8 +9,47 @@ local scene = composer.newScene()
 -- -----------------------------------------------------------------------------------
 
 local buttonSound
-local music_off -- true means off
-local sound_off
+
+local musicText
+local soundText
+
+local function setMusic()
+	audio.play( buttonSound, { channel=2}  )
+	if(audio.getVolume( { channel=1 } ) == 0) 
+	then
+		audio.setVolume( 0.4, { channel=1 } )
+		musicText.text = "Music ON"
+	else 
+		audio.setVolume( 0, { channel=1 } )
+		musicText.text = "Music OFF"
+	end
+	return true
+end  
+
+local function setAudio()
+	audio.play( buttonSound, { channel=2}  )
+	if(audio.getVolume({channel=2}) == 0 ) then 
+		audio.setVolume( 0.8, { channel=2 } )
+		audio.setVolume( 0.9, { channel=3 } )
+		soundText.text = "Audio ON"
+	else 
+		audio.setVolume( 0, { channel=2 } )
+		audio.setVolume( 0, { channel=3 } )
+		soundText.text = "Audio OFF"
+	end
+	return true
+end  
+
+
+local function gotoPlayWithAi()
+	audio.play( buttonSound, { channel=2} )
+	composer.gotoScene( "playWithAi", { time=800, effect="crossFade" } )
+end
+
+local function gotoPlayWithFriend()
+	audio.play( buttonSound, { channel=2} )
+	composer.gotoScene( "playWithFriend", { time=800, effect="crossFade" } )
+end
 
 -- Handler that gets notified when the alert closes
 local function onComplete( event )
@@ -36,41 +75,7 @@ end
 
 Runtime:addEventListener( "key", scene )
 
-local function changeMusic()
-	audio.play( buttonSound, { channel=2}  )
-	if(music_off == true) then 
-		audio.setVolume( 0.4, { channel=1 } )
-		music_off = false 
-	else 
-		audio.setVolume( 0, { channel=1 } )
-		music_off = true
-	end
-end  
 
-local function changeSound()
-	audio.play( buttonSound, { channel=2}  )
-	if(sound_off == true) then 
-		audio.setVolume( 0.8, { channel=2 } )
-		audio.setVolume( 0.9, { channel=3 } )
-		sound_off = false 
-	else 
-		audio.setVolume( 0, { channel=2 } )
-		audio.setVolume( 0, { channel=3 } )
-		sound_off = true
-	end
-end  
-
-
-
-local function gotoPlayWithAi()
-	audio.play( buttonSound, { channel=2} )
-	composer.gotoScene( "playWithAi", { time=800, effect="crossFade" } )
-end
-
-local function gotoPlayWithFriend()
-	audio.play( buttonSound, { channel=2} )
-	composer.gotoScene( "playWithFriend", { time=800, effect="crossFade" } )
-end
 
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
@@ -100,22 +105,39 @@ function scene:create( event )
 
 	playWithAi:addEventListener( "tap", gotoPlayWithAi )
 	playWithFriend:addEventListener( "tap", gotoPlayWithFriend )
-
-	music_off = false
-	sound_off = false 
+ 
 
 	local sound = display.newImageRect( sceneGroup, "Image/unmute.png", 35, 35)
 	sound.x = display.contentCenterX+120
-	sound.y = display.contentCenterY+250
+	sound.y = display.contentCenterY+230
 
-	sound:addEventListener( "tap", changeSound )
+	soundText = display.newText( sceneGroup, 'Audio ON', 
+		display.contentCenterX+120, display.contentCenterY+260, 
+		native.systemFont, 12
+	)
+	soundText:setFillColor( 0, 0, 0 )
+
+	sound:addEventListener( "tap", setAudio )
+	soundText:addEventListener( "tap", setAudio )
 
 	local music = display.newImageRect( sceneGroup, "Image/music.png", 35, 35)
 	music.x = display.contentCenterX-120
-	music.y = display.contentCenterY+250
+	music.y = display.contentCenterY+230
+	
+	musicText = display.newText( sceneGroup, 'Music ON', 
+		display.contentCenterX-120, display.contentCenterY+260, 
+		native.systemFont, 12
+	)
+	musicText:setFillColor( 0, 0, 0 )
+	
+	music:addEventListener( "tap", setMusic )
+	musicText:addEventListener( "tap", setMusic )
 
-	music:addEventListener( "tap", changeMusic )
-
+	setAudio()
+	setMusic()
+	setAudio()
+	setMusic()
+	
 end
 
 
@@ -154,7 +176,7 @@ function scene:hide( event )
 
 	elseif ( phase == "did" ) then
 		-- Code here runs immediately after the scene goes entirely off screen
-
+		composer.removeScene( "menu" )
 		-- Stop the music!
         --audio.stop( 1 )
 	end
