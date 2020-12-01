@@ -444,7 +444,7 @@ end
 removelistener = function ()
 
 	for i=1, 9, 1 do                
-		print(square[i].img:removeEventListener("tap", makeManMove))               
+		square[i].img:removeEventListener("tap", makeManMove)               
     end
 
 	backButton:removeEventListener( "tap", gotoMenu)
