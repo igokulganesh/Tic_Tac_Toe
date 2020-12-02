@@ -35,6 +35,7 @@ local restartButton
 
 -- function 
 local restart 
+local removelistener
 
 local function gotoMenu()  
 	audio.play( buttonSound, { channel=2}  )
@@ -44,7 +45,8 @@ end
 
 local function gotoRestart()
 	audio.play( buttonSound, { channel=2}  )
-	restart()
+	removelistener()
+	scene:create()
 end
 
 --bcak button
@@ -336,10 +338,9 @@ local function getBestMove(ours, opp)
 end
 
 restart = function()
+	removelistener()
 	scene:create()
 end
-
-local removelistener 
 
 local function option(title)
 

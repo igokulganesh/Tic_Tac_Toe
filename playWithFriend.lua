@@ -35,6 +35,7 @@ local restartButton
 
 -- function 
 local restart 
+local removelistener
 
 local function gotoMenu()  
 	audio.play( buttonSound, { channel=2}  )
@@ -44,7 +45,8 @@ end
 
 local function gotoRestart()
 	audio.play( buttonSound, { channel=2}  )
-	restart()
+	removelistener()
+	scene:create()
 end
 		
 
@@ -156,8 +158,6 @@ end
 restart = function()
 	scene:create()
 end
-
-local removelistener 
 
 local function option(title)
 
