@@ -69,7 +69,7 @@ function scene:key(event)
     -- handle the back key press however you choose
     if ( event.keyName == "back" ) then
     	-- Go to the menu screen
-		local alert = native.showAlert( "Gg DevOps", "Are you sure you want quit?", { "No", "Yes" }, onComplete )
+		local alert = native.showAlert( "Quit", "Are you sure you want quit?", { "Yes", "No" }, onComplete )
     end
 end
 
