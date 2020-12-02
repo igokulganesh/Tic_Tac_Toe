@@ -55,7 +55,9 @@ function scene:key(event)
     -- handle the back key press however you choose
     if ( event.keyName == "back" ) then
     	-- Go to the menu screen
-		composer.gotoScene( "menu" )
+		if ( system.getInfo("platform") == "android" ) then
+            return true
+        end
     end
 end
 
