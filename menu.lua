@@ -59,6 +59,8 @@ local function onComplete( event )
         local i = event.index
         if ( i == 1 ) then
         	native.requestExit()
+        elseif ( i == 2) then 
+        	-- do nothing 
         end
     end
 end
@@ -70,6 +72,7 @@ function scene:key(event)
     if ( event.keyName == "back" ) then
     	-- Go to the menu screen
 		local alert = native.showAlert( "Quit", "Are you sure you want quit?", { "Yes", "No" }, onComplete )
+		return true 
     end
 end
 
