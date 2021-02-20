@@ -14,7 +14,7 @@ local mainGroup -- Display group for the X and O
 local boxGroup -- for square
 
 
-local move = 0 --Number of move currently 
+local moves = 0 --Number of move currently 
 local status = 0 -- Game status -- 0 means not completed -- 1 means player1 wins -- 2 means player2 wins -- 3 means tied
 local player1 = 1
 local player2 = 2 --here player2 is computer
@@ -38,13 +38,13 @@ local restart
 local removelistener
 
 local function gotoMenu()  
-	audio.play( buttonSound, { channel=2}  )
+	audio.play( buttonSound, { channel=2 }  )
 	composer.gotoScene( "menu" )
 end 
 
 
 local function gotoRestart()
-	audio.play( buttonSound, { channel=2}  )
+	audio.play( buttonSound, { channel=2 } )
 	removelistener()
 	scene:create()
 end
@@ -91,7 +91,7 @@ local function drawXO(s, player)
 	local j = (s.img.id-1)%3 
 	board[i][j] = player
 	s.val = player
-	move = move + 1
+	moves = moves + 1
 end
 
 local function drawLine( x1, y1, x2, y2)
@@ -104,29 +104,21 @@ local function drawLine( x1, y1, x2, y2)
 end
 
 -- logic funtion
-local function isRowWin(val)
+local function isWinMove(val)
+
 	for i = 0, 2, 1
 	do
 		if(board[i][0] == val and board[i][1] == val and board[i][2] == val)
 		then 
 			return true 
 		end
-	end
-	return false
-end
 
-local function isColumnWin(val)
-	for i = 0, 2, 1
-	do 
 		if(board[0][i] == val and board[1][i] == val and board[2][i] == val ) 
 		then
 			return true 
 		end
 	end
-	return false
-end
 
-local function isDiagonalWin(val)
 	if(board[0][0] == val and board[1][1] == val and board[2][2] == val) then
 		return true
 	end 
@@ -135,11 +127,7 @@ local function isDiagonalWin(val)
 		return true 
 	end
 
-	return false ; 
-end
-
-local function isWinMove(val)
-	return (isRowWin(val) or isColumnWin(val) or isDiagonalWin(val))
+	return false 
 end
 
 local function isGameOver()
@@ -148,7 +136,7 @@ local function isGameOver()
 		status = player2
 	elseif(isWinMove(player1)) then
 		status = player1
-	elseif(move >= 9) then
+	elseif(moves >= 9) then
 		status = 3
 	else
 		return false 
@@ -157,181 +145,408 @@ local function isGameOver()
 	return true 
 end
 
-local function makeWinMove(val, last)
-	
-	if(move < 3) then 
-		return false 
-	end
+local function attack(cpu, hum, last)
 
-	for i = 0, 2, 1
-	do
-		for j = 0, 2, 1
-		do
-			if(board[i][j] == 0)
-			then
-				board[i][j] = val 
-				if(isDiagonalWin(val) or isColumnWin(val) or isRowWin(val))
-				then
-					last[1] = (i*3)+j 
-					return true 
-				end
-				board[i][j] = 0 
-			end
-		end
-	end
+	local corner = board[0][0] + board[0][2] + board[2][0] + board[2][2] 
+	if(corner == hum or corner == 2 * hum ) 
+    then
+    	for i = 0, 2, 1
+        do
+        	--row
+            if( board[i][0]+board[i][1]+board[i][2]==cpu and (board[i][0]==cpu or board[i][1]==cpu or board[i][2]==cpu) )
+            then
+                if(i==1)
+                then
+                    for j = 0, 2, 1
+                    do
+                        if(board[i][j]==0)
+                        then
+                            board[i][j]=cpu;
+                            last[1] = (i*3)+j ; 
+                            return true ;
+                        end
+                    end
+                else
+                    for j = 2, 0, -1
+                    do
+                        if(board[i][j]==0)
+                        then
+                            board[i][j]=cpu;
+                            last[1] = (i*3)+j ; 
+                            return true ;
+                        end
+                    end
+                end
+            end
 
-	return false
+            --col
+            if(board[0][i]+board[1][i]+board[2][i]==cpu and (board[0][i]==cpu or board[1][i]==cpu or board[2][i]==cpu))
+            then
+                if(i==1)
+                then
+                    for j = 0, 2, 1
+                    do
+                        if(board[j][i]==0)
+                        then
+                            board[j][i]=cpu;
+                            last[1] = (j*3)+i ; 
+                            return true ;
+                        end
+                    end
+                else
+                    for j = 2, 0, -1
+                    do
+                        if(board[j][i]==0)
+                        then
+                            board[j][i]=cpu;
+                            last[1] = (j*3)+i ; 
+                            return true ;
+                        end
+                    end
+                end     
+            end
+        end
+
+        if( board[0][0]+board[1][1]+board[2][2]==cpu and (board[0][0]==cpu or board[1][1]==cpu or board[2][2]==cpu))
+        then 
+            for i = 2, 0, -1
+            do
+                if((board[i][i]==0) and ((board[i][0]+board[i][1]+board[i][2]==cpu and 
+                	(board[i][0]==cpu or board[i][1]==cpu or board[i][2]==cpu)) or 
+                	((board[0][i]+board[1][i]+board[2][i]==cpu) and  (board[0][i]==cpu or board[1][i]==cpu or board[2][i]==cpu))))
+                then
+                    board[i][i]=cpu;
+                    last[1] = (i*3)+i ; 
+                    return true ;
+                end
+            end
+
+            for i = 2, 0, -1
+            do
+                if(board[i][i]==0)
+                then
+                    if((board[i][0]+board[i][1]+board[i][2]==hum and 
+                    	(board[i][0]==hum or board[i][1]==hum or board[i][2]==hum)) and
+                    	(board[0][i]+board[1][i]+board[2][i]==hum and (board[0][i]==hum or board[1][i]==hum or board[2][i]==hum)))
+                    then
+                        board[i][i]=cpu;
+                        last[1] = (i*3)+i ; 
+                    	return true ;
+                    end
+                end
+            end
+
+            for i=2, 0, -1
+            do
+                if(board[i][i]==0)
+                then
+                    board[i][i]=cpu;
+                    last[1] = (i*3)+i ; 
+                    return true ;
+                end
+            end
+		elseif( board[0][2]+board[1][1]+board[2][0] == cpu and (board[0][2]==cpu or board[1][1]==cpu or board[2][0]==cpu))
+        then
+            for i=2, 0, -1
+            do
+                if(board[i][2-i]==0 and ((board[i][0]+board[i][1]+board[i][2]==cpu and 
+                	(board[i][0]==cpu or board[i][1]==cpu or board[i][2]==cpu)) or 
+                	((board[0][2-i]+board[1][2-i]+board[2][2-i]==cpu) and 
+                	(board[0][2-i]==cpu or board[1][2-i]==cpu or board[2][2-i]==cpu))))
+                then
+                    board[i][2-i]=cpu;
+                    last[1] = (i*3)+(2-i) ; 
+                    return true ;
+                end
+            end
+
+            for i = 2, 0, -1
+            do
+                if(board[i][2-i]==0)
+                then
+                    if((board[i][0]+board[i][1]+board[i][2]==hum and (board[i][0]==hum or board[i][1]==hum or board[i][2]==hum)) and
+                    	(board[0][2-i]+board[1][2-i]+board[2][2-i]==hum and (board[0][2-i]==hum or board[1][2-i]==hum or board[2][2-i]==hum)))
+                    then
+                        board[i][2-i]=cpu;
+                        last[1] = (i*3)+(2-i) ; 
+                    	return true ;
+                    end
+                end
+            end
+
+            for i = 2, 0, -1
+            do
+                if(board[i][2-i]==0)
+                then
+                    board[i][2-i]=cpu;
+                    last[1] = (i*3)+(2-i) ; 
+                    return true ;
+                end
+            end
+        end
+    else -- here diagonal wise 
+
+    	if(board[0][0]+board[1][1]+board[2][2]==cpu and (board[0][0]==cpu or board[1][1]==cpu or board[2][2]==cpu))
+        then
+            for i = 2, 0, -1
+            do
+                if((board[i][i]==0) and ((board[i][0]+board[i][1]+board[i][2]==cpu and 
+                	(board[i][0]==cpu or board[i][1]==cpu or board[i][2]==cpu)) or ((board[0][i]+board[1][i]+board[2][i]==cpu)
+                	and (board[0][i]==cpu or board[1][i]==cpu or board[2][i]==cpu))))
+                then
+                    board[i][i]=cpu;
+                   	last[1] = (i*3)+ i ; 
+                    return true ;
+                end
+            end
+
+            for i = 2, 0, -1
+            do
+                if(board[i][i]==0)
+                then
+                    if((board[i][0]+board[i][1]+board[i][2]==hum and (board[i][0]==hum or board[i][1]==hum or board[i][2]==hum))
+                    	and (board[0][i]+board[1][i]+board[2][i]==hum and (board[0][i]==hum or board[1][i]==hum or board[2][i]==hum)))
+                    then
+                        board[i][i]=cpu;
+                        last[1] = (i*3)+ i ; 
+                    	return true ;                    
+                	end
+                end
+            end
+
+            for i = 2, 0, -1
+            do
+                if(board[i][i]==0)
+                then
+                    board[i][i]=cpu;
+                    last[1] = (i*3)+ i ; 
+                    return true ;
+                end
+            end
+        
+        elseif( board[0][2]+board[1][1]+board[2][0]==cpu and (board[0][2]==cpu or board[1][1]==cpu or board[2][0]==cpu))
+        then
+            for i = 2, 0, -1
+            do
+                if(board[i][2-i]==0 and ((board[i][0]+board[i][1]+board[i][2]==cpu and 
+                	(board[i][0]==cpu or board[i][1]==cpu or board[i][2]==cpu)) or 
+                	((board[0][2-i]+board[1][2-i]+board[2][2-i]==cpu) and 
+                	(board[0][2-i]==cpu or board[1][2-i]==cpu or board[2][2-i]==cpu))))
+                then
+                    board[i][2-i]=cpu;
+                    last[1] = (i*3)+ (2-i) ; 
+                    return true ;
+                end
+            end
+
+            for i = 2, 0, -1
+            do
+                if(board[i][2-i]==0)
+                then
+                    if((board[i][0]+board[i][1]+board[i][2]==hum and (board[i][0]==hum or board[i][1]==hum or board[i][2]==hum)) 
+                    	and (board[0][2-i]+board[1][2-i]+board[2][2-i]==hum and 
+                    	(board[0][2-i]==hum or board[1][2-i]==hum or board[2][2-i]==hum)))
+                    then
+                        board[i][2-i]=cpu;
+                        last[1] = (i*3)+ (2-i) ; 
+                    	return true ;
+                    end
+                end
+            end
+            
+            for i = 2, 0, -1
+            do
+                if(board[i][2-i]==0)
+                then
+                    board[i][2-i]=cpu;
+                    last[1] = (i*3)+ (2-i) ; 
+                    return true ;
+                end
+            end
+
+        else
+            for i = 0, 2, 1
+            do
+                if( board[i][0]+board[i][1]+board[i][2]==cpu and (board[i][0]==cpu or board[i][1]==cpu or board[i][2]==cpu) )
+                then
+                    if(i==1)
+                    then
+                        for j=0, 2, 1
+                        do
+                            if(board[i][j]==0)
+                            then
+                                board[i][j]=cpu;
+								last[1] = (i*3)+ j ; 
+                    			return true ;
+                            end
+                        end
+                    else
+                        for j=2, 0, -1
+                        do
+                            if(board[i][j]==0)
+                            then
+                                board[i][j]=cpu;
+                                last[1] = (i*3)+ j ; 
+                    			return true ;
+                            end
+                        end
+                    end
+                elseif(board[0][i]+board[1][i]+board[2][i]==cpu and (board[0][i]==cpu or board[1][i]==cpu or board[2][i]==cpu))
+                then 
+                    if(i==1)
+                    then
+                        for j=0, 2, 1
+                        do
+                            if(board[j][i]==0)
+                            then
+                                board[j][i]=cpu;
+                                last[1] = (j*3)+ i ; 
+                    			return true ;
+                            end
+                        end
+                    else
+                        for j=2, 0, -1
+                        do
+                            if(board[j][i]==0)
+                            then
+                                board[j][i]=cpu;
+                                last[1] = (j*3)+ i ; 
+                    			return true ;
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return false ; 
 end
 
-local function makeDefenceMove(ours, opp, last)
-
-	if(move < 3) then
+local function defend(ours, opp, cpu, moves, last)
+	if(moves < 2)
+	then
 		return false 
 	end 
 
-	for i = 0, 2, 1
-	do 
-		for j = 0, 2, 1
-		do
-			if(board[i][j] == 0)
-			then
-				board[i][j] = opp  
-				if(isDiagonalWin(opp) or isColumnWin(opp) or isRowWin(opp))
-				then
-					last[1] = (i*3)+j 
-					board[i][j] = ours  
-					return true 
-				end
-				board[i][j] = 0  
-			end
-		end
-	end
-	return false 
-end
+	if(board[0][0]+board[1][1]+board[2][2]==2*ours and board[0][0]~=opp and board[1][1]~=opp and board[2][2]~=opp)
+    then
+        for i=0, 2, 1
+        do
+            if(board[i][i]==0)
+            then 
+                board[i][i]=cpu;
+                last[1] = (i*3)+i ; 
+				return true 
+            end
+        end
+    end
 
-local function attack(ours, opp, last)
+	if(board[0][2]+board[1][1]+board[2][0]==2*ours and board[0][2]~=opp and board[1][1]~=opp and board[2][0]~=opp)
+    then 
+        for i=0, 2, 1 
+        do
+            if(board[i][2-i]==0)
+            then 
+                board[i][2-i]=cpu
+                last[1] = (i*3)+(2-i)  
+				return true 
+            end
+        end
+    end
+
 
 	for i = 0, 2, 1
 	do
-		if(board[i][0] + board[i][1] + board[i][2] == ours and (board[i][0] == ours or board[i][1] == ours or board[i][2] == ours)) 
-			-- row wise check if it contains 1 ours then make it 2 in row 
+		-- row wise 
+		if(board[i][0]+board[i][1]+board[i][2] == 2*ours and board[i][0] ~= opp and board[i][1] ~= opp and board[i][2] ~= opp)
 		then
 			for j = 0, 2, 1
-			do 
+			do
 				if(board[i][j] == 0)
 				then
-					board[i][j] = ours 
-					last[1] = (i*3)+j
-					return true 
-				end
+					board[i][j] = cpu ; 
+					last[1] = (i*3)+j ; 
+					return true ; 
+				end	
 			end
 		end
 
-		--same as above in column
-		if(board[0][i] + board[1][i] + board[2][i] == ours and (board[0][i] == ours or board[1][i] == ours or board[2][i] == ours)) 
+		-- col wise 
+		if(board[0][i]+board[1][i]+board[2][i] == 2*ours and board[0][i] ~= opp and board[1][i] ~= opp and board[2][i] ~= opp)
 		then
 			for j = 0, 2, 1
 			do
 				if(board[j][i] == 0)
 				then
-					board[j][i] = ours
-					last[1] = (j*3)+i 
-					return true 
-				end
- 			end
-		end
-	end
-
-	-- again in diagonal 
-	if(board[0][0] + board[1][1] + board[2][2] == ours and (board[0][0] == ours or board[1][1] == ours or board[2][2] == ours))
-	then
-		local i = 0
-		local j = 0
-		while (i < 3) and (j < 3)
-		do
-			if(board[i][j] == 0)
-			then
-				board[i][j] = ours
-				last[1] = (i*3)+j
-				return true 
+					board[j][i] = cpu ; 
+					last[1] = (j*3)+i ; 
+					return true ; 
+				end	
 			end
-			i = i+1 
-			j = j+1 
 		end
-	end
+	end 
 
-	if(board[0][2] + board[1][1] + board[2][0] == ours and (board[0][2] == ours or board[1][1] == ours or board[2][0] == ours))
-	then
-		local i = 0
-		local j = 2
-		while (i < 3) and (j >= 0)
-		do
-			if(board[i][j] == 0)
-			then
-				board[i][j] = ours  
-				last[1] = (i*3)+j 
-				return true 
-			end
-			i = i+1 
-			j = j-1 
-		end
-	end
-
-	return false ; 
+    return false 
 end
 
-local function getBestMove(ours, opp)
-	
-	if(move == 0) -- random move
+local function getBestMove(cpu, hum)
+
+	if(moves == 0) -- random move in any place but corners only
 	then
-		local i = math.random(0, 2)
-		local j = math.random(0, 2)
-		board[i][j] = ours
-		return (i*3)+j ; 
+		local i = math.random(0, 1)*2
+		local j = math.random(0, 1)*2
+		board[i][j] = cpu
+		return (i*3)+j 
 	end
 
 	local last = {0}
 
-	if(makeWinMove(ours, last) == false) --check ours winning position and make it happen 
+	if(defend(cpu, hum, cpu, moves, last) == false) -- check cpu winning position and make it happen 
 	then
-		if(makeDefenceMove(ours, opp, last) == false) --check opponent's winning position then block them if any.
+		if(defend(hum, cpu, cpu, moves, last) == false) -- check opponent's winning position then block them if any. 
 		then
-			local corner =  board[0][0] + board[0][2] + board[2][0] + board[2][2]
+			local corner = board[0][0] + board[0][2] + board[2][0] + board[2][2] 
 
-			if(corner == ours+opp or corner == opp+(ours*2) and board[1][1] == 0)
+			if((corner == cpu+hum or corner == hum+(cpu*2)) and board[1][1] == 0)
 			then
-				for i = 0, 2, 2 -- trying to place any four corner
+				for i = 0, 2, 2 -- trying to place any four corner 
 				do
-					for j = 0, 2, 2
+					for j = 0, 2, 2 
 					do
 						if(board[i][j] == 0)
 						then
-							board[i][j] = ours 
-							return (i*3)+j ;
+							board[i][j] = cpu
+							return (i*3)+j 
 						end
 					end
 				end
 			end
 
-			if(board[1][1] == 0) -- trying to place centre 
+			if(board[1][1] == 0 and moves == 2) -- trying to place centre 
 			then
-				board[1][1] = ours 
-				return 4
+				board[1][1] = cpu 
+				return 4 
 			end
 
-			if(attack(ours, opp, last) == false) -- trying to attack move 
+			if(attack(board, cpu, hum, last) == false)
 			then
-				for i = 0, 2, 1 -- trying to place anywhere possible
-				do
-					for j = 0, 2, 1
-					do
-						if(board[i][j] == 0)
-						then
-							board[i][j] = ours 
-							return (i*3)+j
+				if(board[1][1] == 0) 
+				then
+					board[1][1] = cpu 
+					return 4 
+				else
+					for i = 0, 2, 1 -- trying to place anywhere possible
+					do 
+						for j = 0, 2, 1 
+						do
+							if(board[i][j] == 0)
+							then
+								board[i][j] = cpu 
+								return (i*3)+j 
+							end
 						end
-					end
-				end		
+					end	
+				end
 			end
 		end
 	end
@@ -394,7 +609,7 @@ local function gameOver()
 		gameStatus = "Match Tied"
 	end
 
-	audio.play( winSound, { channel=3} )
+	audio.play( winSound, { channel=3 } )
 
 	option(gameStatus)
 end
@@ -406,13 +621,14 @@ local function makeManMove(event)
 
 	if( isP1Move and s.val == 0 )
 	then 
-		audio.play( tapSound, { channel=2} )
+		audio.play( tapSound, { channel=2 } )
 		drawXO(s, player1)
 		isP1Move = false
 	end
 
 	if( isGameOver() ) then 
 		gameOver()
+		return true
 	end
 
 	setTurn(false)
@@ -539,7 +755,7 @@ function scene:create( event )
 	turnText:setFillColor( 0, 0, 0 )
 
 
-	move = 0 --Number of move currently 
+	moves = 0 --Number of move currently 
 	status = 0 -- Game status -- 0 means not completed -- 1 means player1 wins -- 2 means player2 wins -- 3 means tied
 	player1 = 1
 	player2 = 2 --here player2 is computer
@@ -547,7 +763,7 @@ function scene:create( event )
 
 	for i = 0, 2, 1
 	do
-		board[i] = {} 
+		board[i] = {}
 		for j = 0, 2, 1 do
 			board[i][j] = 0
 		end
