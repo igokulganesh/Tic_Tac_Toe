@@ -52,9 +52,8 @@ int getManMove(int val)
 	{
 		cout << "Invalid position\n" ; 
 		pos = getManMove(val); 
+		return pos ; 
 	}
-
-	board[i][j] = val ; 
 
 	return pos ;  
 }
@@ -209,6 +208,7 @@ int main()
 		{
 			showInstruction(); 
 			pos =  getManMove(hum); 
+			board[pos/3][pos%3] = hum ;
 			isManMove = false ; 
 		}
 		else
