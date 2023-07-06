@@ -21,5 +21,5 @@ Minimax is a decision rule used in artificial intelligence, decision theory, gam
 </p>
 
 # Download 
-- [Windows](https://drive.google.com/file/d/1ccx-tQn9ekfjgtY70njqHuAss7u7fBzi/view?usp=sharing)
-- [Android](https://drive.google.com/file/d/1ltlThgx5rSqqsoXZcn1jZz1d0-9Mfr3C/view?usp=sharing)
+- [Windows](https://drive.google.com/drive/folders/1PX2q2FmN1wobvcPsStUQniJxpM3M3mCi?usp=sharing)
+- [Android](https://drive.google.com/drive/folders/1VkCO1UltRhn2vMfLIISsMtKgrkqmnyme?usp=sharing)
